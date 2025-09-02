@@ -4,32 +4,34 @@
 
 #include <thread>
 
-void HelloThread() {
-
+void HelloThread() 
+{
     cout << "Hello Thread :)" << endl;
+}
+
+void HelloThread_2(int32 num) 
+{
+    cout << num << endl;
 }
 
 int main()
 {
-    HelloWorld();
-
-    std::thread t;
-
-    auto id1 = t.get_id();
-    cout << id1 << endl;
+    vector<thread> v;
 
 
-    t = std::thread(HelloThread);
-    auto id2 = t.get_id();
-    cout << id2 << endl;
 
-    int64 cnt = t.hardware_concurrency();
+    for (int32 i = 0; i < 10; ++i) {
+        v.push_back(std::thread(HelloThread_2, i));
+    }
 
-    cout << cnt << endl;
+    for (int32 i = 0; i < 10; ++i) 
+    {
+        if (v[i].joinable())
+        {
+            v[i].join();
+        }
 
-    cout << "Hello Main :(" << endl;
+    }
 
-
-    t.join();
 }
 
