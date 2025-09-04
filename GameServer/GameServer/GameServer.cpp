@@ -4,36 +4,42 @@
 
 #include <thread>
 #include <atomic>
+#include <mutex>
+#include <future>
+#include <chrono>
 
-std::atomic<int32> sum{ 0 };
+using namespace chrono_literals;
 
-void Add() 
+queue<int32> q;
+stack<int32> s;
+
+void Push()
 {
-	for (int32 i = 0; i < 100000; ++i) {
-		sum.fetch_add(1);
+	while (true) 
+	{
+		int32 value = rand() % 100;
+		q.push(value);
+
 	}
 }
 
-void Sub() 
+void Pop()
 {
-	for (int32 i = 0; i < 100000; ++i) {
-		sum.fetch_add(-1);
+	while (true) 
+	{
+		if (q.empty())
+			continue;
+		else
+		{
+			int32 data = q.front();
+			q.pop();
+			cout << data << endl;
+		}
 	}
 }
-
-
 
 int main()
 {
-	std::thread t1(Add);
-	std::thread t2(Sub);
-
-
-
-	t1.join();
-	t2.join();
-
-	cout << sum << endl;
-
+	std::thread t1(Push);
+	std::thread t2(Pop);
 }
-
