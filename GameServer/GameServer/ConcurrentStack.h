@@ -60,9 +60,18 @@ public:
 
 	void Push(const T& value)
 	{
-		Node* data = new Node;
-		data->next = head;
-		head = data;
+		Node* node = new Node(value);
+		node->next = head;
+		head = node;
+		
+
+		while (_head.compare_exchange_weak(node->next, node) == false)
+		{
+
+
+		}
+
+
 	}
 
 	void Pop()
