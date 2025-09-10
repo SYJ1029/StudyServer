@@ -43,3 +43,32 @@ private:
 	mutex _mutex;
 	condition_variable _condVar;
 };
+
+template<typename T>
+class LockFreeStack {
+	struct Node 
+	{
+		Node(const T& value) : data(value)
+		{
+
+		}
+
+		T data;
+		Node* next;
+	};
+public:
+
+	void Push(const T& value)
+	{
+		Node* data = new Node;
+		data->next = head;
+		head = data;
+	}
+
+	void Pop()
+	{
+
+	}
+private:
+	std::atomic<Node*> _head;
+};
