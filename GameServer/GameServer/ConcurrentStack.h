@@ -61,21 +61,19 @@ public:
 	void Push(const T& value)
 	{
 		Node* node = new Node(value);
-		node->next = head;
-		head = node;
-		
+		node->next = head;		
 
 		while (_head.compare_exchange_weak(node->next, node) == false)
 		{
-
-
 		}
-
-
 	}
 
-	void Pop()
+	bool TryPop(T& value)
 	{
+		Node* oldhead = _head;
+		_head = _head->next;
+		value = oldhead->data;
+		delete oldhead;
 
 	}
 private:
