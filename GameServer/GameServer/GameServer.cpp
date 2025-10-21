@@ -1,52 +1,87 @@
 ﻿#include "pch.h"
 #include <iostream>
-#include <windows.h>
 #include "CorePch.h"
-
-#include <thread>
 #include <atomic>
 #include <mutex>
+#include <windows.h>
 #include <future>
-#include <chrono>
+#include "ThreadManager.h"
 
-#include "ConcurrentQueue.h"
-#include "ConcurrentStack.h"
+#include "RefCounting.h"
 
-using namespace chrono_literals;
-
-LockQueue<int32> q;
-LockStack<int32> s;
-
-void Push()
+class Wraight : public RefCountable
 {
-	while (true) 
-	{
-		int32 value = rand() % 100;
-		q.Push(value);
-		this_thread::sleep_for(10ms);
-	}
-}
+public:
+	int _hp = 150;
+	int _posX = 0;
+	int _posY = 0;
+};
 
-void Pop()
+using WraightRef = TSharedPtr<Wraight>;
+
+class Missile : public RefCountable
 {
-	while (true)
+public:
+	void SetTarget(WraightRef target)
 	{
-
-
-		int32 data = 0;
-		if (q.TryPop(OUT data))
-			cout << data << endl;
-
+		_target = target;
+		// 중간에 개입 가능
+		//target->AddRef();
 	}
-}
+
+	bool Update()
+	{
+		if (_target == nullptr)
+			return true;
+
+		int posX = _target->_posX;
+		int posY = _target->_posY;
+
+		// TODO : 쫓아간다
+
+		if (_target->_hp == 0)
+		{
+			//_target->ReleaseRef();
+			_target = nullptr;
+			return true;
+		}
+
+		return false;
+	}
+
+	WraightRef _target = nullptr;
+};
+
+using MissileRef = TSharedPtr<Missile>;
 
 int main()
 {
-	std::thread t1(Push);
-	std::thread t2(Pop);
-	std::thread t3(Pop);
+	WraightRef wraight(new Wraight());
+	wraight->ReleaseRef();
+	MissileRef missile(new Missile());
+	missile->ReleaseRef();
 
-	t1.join();
-	t2.join();
-	t3.join();
+	missile->SetTarget(wraight);
+
+	// 레이스가 피격 당함
+	wraight->_hp = 0;
+	//delete wraight;
+	//wraight->ReleaseRef();
+	wraight = nullptr;
+
+	while (true)
+	{
+		if (missile)
+		{
+			if (missile->Update())
+			{
+				//missile->ReleaseRef();
+				missile = nullptr;
+			}
+		}
+	}
+
+	//missile->ReleaseRef();
+	missile = nullptr;
+	//delete missile;
 }
