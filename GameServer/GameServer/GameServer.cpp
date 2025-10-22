@@ -9,79 +9,57 @@
 
 #include "RefCounting.h"
 
-class Wraight : public RefCountable
+class Knight
 {
 public:
-	int _hp = 150;
-	int _posX = 0;
-	int _posY = 0;
-};
-
-using WraightRef = TSharedPtr<Wraight>;
-
-class Missile : public RefCountable
-{
-public:
-	void SetTarget(WraightRef target)
+	Knight() 
 	{
-		_target = target;
-		// 중간에 개입 가능
-		//target->AddRef();
+		std::cout << "Knight Created" << std::endl;
+	}
+	~Knight() 
+	{
+		std::cout << "Knight Destroyed" << std::endl;
 	}
 
-	bool Update()
+	static void* operator new(size_t size)
 	{
-		if (_target == nullptr)
-			return true;
+		cout << "새로운 메모리 할당" << endl;
 
-		int posX = _target->_posX;
-		int posY = _target->_posY;
+		void* ptr = malloc(size);
 
-		// TODO : 쫓아간다
-
-		if (_target->_hp == 0)
-		{
-			//_target->ReleaseRef();
-			_target = nullptr;
-			return true;
-		}
-
-		return false;
+		return ptr;
 	}
 
-	WraightRef _target = nullptr;
+	static void operator delete(void* ptr)
+	{
+		cout << "메모리 제거" << endl;
+
+		::free(ptr);
+	}
 };
 
-using MissileRef = TSharedPtr<Missile>;
+// new도 오버로딩이 가능하다
+
+//void* operator new(size_t size)
+//{
+//	cout << "새로운 메모리 할당" << endl;
+//
+//	void* ptr = malloc(size);
+//
+//	return ptr;
+//}
+//
+//void operator delete(void* ptr)
+//{
+//	cout << "메모리 제거" << endl;
+//
+//	::free(ptr);
+//}
 
 int main()
 {
-	WraightRef wraight(new Wraight());
-	wraight->ReleaseRef();
-	MissileRef missile(new Missile());
-	missile->ReleaseRef();
+	Knight* pKnight = new Knight();
 
-	missile->SetTarget(wraight);
-
-	// 레이스가 피격 당함
-	wraight->_hp = 0;
-	//delete wraight;
-	//wraight->ReleaseRef();
-	wraight = nullptr;
-
-	while (true)
-	{
-		if (missile)
-		{
-			if (missile->Update())
-			{
-				//missile->ReleaseRef();
-				missile = nullptr;
-			}
-		}
-	}
-
-	//missile->ReleaseRef();
-	missile = nullptr;
-	//delete missile;
+	delete pKnight;
 }
+
