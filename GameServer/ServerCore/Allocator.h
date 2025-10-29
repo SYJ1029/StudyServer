@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 /*
 -------------------------
 	 Base Allocator
