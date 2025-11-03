@@ -10,13 +10,19 @@
 #include "RefCounting.h"
 #include "Memory.h"
 
-
-class Knight
+class Player
 {
 public:
-	Knight() 
+	Player() {}
+	virtual ~Player() {}
+};
+
+class Knight : public Player
+{
+public:
+	Knight()
 	{
-		std::cout << "Knight Created" << std::endl;
+		cout << "Knight()" << endl;
 	}
 
 	Knight(int32 hp) : _hp(hp)
@@ -24,54 +30,23 @@ public:
 		cout << "Knight(hp)" << endl;
 	}
 
-	~Knight() 
+	~Knight()
 	{
-		std::cout << "Knight Destroyed" << std::endl;
+		cout << "~Knight()" << endl;
 	}
 
-	//static void* operator new(size_t size)
-	//{
-	//	cout << "새로운 메모리 할당" << endl;
-
-	//	void* ptr = malloc(size);
-
-	//	return ptr;
-	//}
-
-	//static void operator delete(void* ptr)
-	//{
-	//	cout << "메모리 제거" << endl;
-
-	//	::free(ptr);
-	//}
-
-private:
 	int32 _hp = 100;
 	int32 _mp = 10;
 };
 
-// new도 오버로딩이 가능하다
-
-//void* operator new(size_t size)
-//{
-//	cout << "새로운 메모리 할당" << endl;
-//
-//	void* ptr = malloc(size);
-//
-//	return ptr;
-//}
-//
-//void operator delete(void* ptr)
-//{
-//	cout << "메모리 제거" << endl;
-//
-//	::free(ptr);
-//}
-
 int main()
 {
-	Knight* pKnight = xnew<Knight>(300);
+	// [                    [   ]]
+	Knight* knight = (Knight*)xnew<Player>();
 
-	xdelete<Knight>(pKnight);
+	knight->_hp = 100;
+
+	xdelete(knight);
+
+
 }
-
