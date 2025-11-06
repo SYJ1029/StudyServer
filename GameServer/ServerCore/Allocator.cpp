@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Allocator.h"
+#include "Memory.h"
 
 
 void* BaseAllocator::Alloc(int32 size)
@@ -26,6 +27,7 @@ void* StompAllocator::Alloc(int32 size)
 	void* baseAddress = ::VirtualAlloc(NULL, pageCount * PAGE_SIZE, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 	return static_cast<void*>(static_cast<int8*>(baseAddress) + dataOffset);
 }
+
 
 void StompAllocator::Release(void* ptr)
 {
