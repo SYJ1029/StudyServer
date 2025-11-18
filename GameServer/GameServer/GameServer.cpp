@@ -1,52 +1,71 @@
 ﻿#include "pch.h"
 #include <iostream>
-#include "CorePch.h"
+
 #include <atomic>
 #include <mutex>
-#include <windows.h>
+#include <thread>
 #include <future>
+#include <iostream>
+#include <chrono>
+
 #include "ThreadManager.h"
-
-#include "RefCounting.h"
 #include "Memory.h"
+#include "Allocator.h"
+#include "LockFreeStack.h"
 
-class Player
+DECLSPEC_ALIGN(16)
+class Data
 {
 public:
-	Player() {}
-	virtual ~Player() {}
+	SListEntry _entry;
+
+	int64 _rand = rand() % 1000;
 };
 
-class Knight : public Player
-{
-public:
-	Knight()
-	{
-		cout << "Knight()" << endl;
-	}
-
-	Knight(int32 hp) : _hp(hp)
-	{
-		cout << "Knight(hp)" << endl;
-	}
-
-	~Knight()
-	{
-		cout << "~Knight()" << endl;
-	}
-
-	int32 _hp = 100;
-	int32 _mp = 10;
-};
+SListHeader* GHeader;
 
 int main()
 {
-	// [                    [   ]]
-	Knight* knight = (Knight*)xnew<Player>();
+	GHeader = new SListHeader();
+	ASSERT_CRASH((uint64)GHeader % 16 == 0);
+	InitializeHeader(GHeader);
 
-	knight->_hp = 100;
+	for (int32 i = 0; i < 3; ++i)
+	{
+		GThreadManager->Launch([]()
+		{
+			while (true)
+			{
+				Data* data = new Data();
+				ASSERT_CRASH((uint64)GHeader % 16 == 0);
 
-	xdelete(knight);
+				PushEntrySList(GHeader, (SListEntry*)data);
+				this_thread::sleep_for(10ms);
+			}
+		});
+	}
 
+	for (int32 i = 0; i < 2; ++i)
+	{
+		GThreadManager->Launch([]()
+			{
+				while (true)
+				{
+					Data* pop = nullptr;
+					pop = (Data*)PopEntrySList(GHeader);
 
+					if (pop)
+					{
+						cout << pop->_rand << endl;
+						delete pop;
+					}
+					else
+					{
+						cout << "NONE" << endl;
+					}
+				}
+			});
+	}
+
+	GThreadManager->Join();
 }
